@@ -432,7 +432,6 @@ class CameraFragmentVideo : Fragment(),CameraReadyListener {
                         }
                         it.post {
                             if (settings.snapshotInfo.encoding == "JPEG") {
-                                broadcastFile(cameraBase.currentSnapshotFilePath)
                                 thumbnailButton.setImageDrawable(createRoundThumb(cameraBase.currentSnapshotFilePath, THUMBNAIL_TYPE_IMAGE))
                             }
                             it.isEnabled = true
@@ -448,10 +447,9 @@ class CameraFragmentVideo : Fragment(),CameraReadyListener {
                     if (SystemClock.elapsedRealtime() - chronometer.base > MIN_REQUIRED_RECORDING_TIME_MILLIS) {
                         Log.i(TAG, "stopRecording enter")
                         cameraBase.stopRecording()
-                        broadcastFile(cameraBase.getCurrentVideoFilePath())
                         sound.play(MediaActionSound.STOP_VIDEO_RECORDING)
                         recorder_button.setBackgroundResource(android.R.drawable.presence_video_online)
-                        if (settings.recorderInfo[0].storageEnable) thumbnailButton.setImageDrawable(createRoundThumb(cameraBase.getCurrentVideoFilePath(), THUMBNAIL_TYPE_VIDEO))
+                        if (settings.recorderInfo[0].storageEnable) thumbnailButton.setImageDrawable(createRoundThumb(cameraBase.getCurrentVideoFilePathList()[0], THUMBNAIL_TYPE_VIDEO))
                         recording = false
                         stopChronometer()
                         Log.i(TAG, "stopRecording exit")
@@ -481,12 +479,6 @@ class CameraFragmentVideo : Fragment(),CameraReadyListener {
         }
     }
 
-    private fun broadcastFile(path: String?) {
-        // Broadcasts the media file to the rest of the system
-        MediaScannerConnection.scanFile(
-                view?.context, arrayOf(path), null, null)
-    }
-
     override fun onResume() {
         Log.i(TAG, "onResume")
         super.onResume()
@@ -510,9 +502,8 @@ class CameraFragmentVideo : Fragment(),CameraReadyListener {
         if (recording) {
             Log.i(TAG, "stopRecording enter")
             cameraBase.stopRecording()
-            broadcastFile(cameraBase.getCurrentVideoFilePath())
             recorder_button.setBackgroundResource(android.R.drawable.presence_video_online)
-            if (settings.recorderInfo[0].storageEnable) thumbnailButton.setImageDrawable(createRoundThumb(cameraBase.getCurrentVideoFilePath(),THUMBNAIL_TYPE_VIDEO))
+            if (settings.recorderInfo[0].storageEnable) thumbnailButton.setImageDrawable(createRoundThumb(cameraBase.getCurrentVideoFilePathList()[0],THUMBNAIL_TYPE_VIDEO))
             recording = false
             stopChronometer()
             Log.i(TAG, "stopRecording exit")

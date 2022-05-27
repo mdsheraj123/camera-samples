@@ -1,5 +1,5 @@
 /*
-# Copyright (c) 2020-2021 Qualcomm Innovation Center, Inc.
+# Copyright (c) 2020-2022 Qualcomm Innovation Center, Inc.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted (subject to the limitations in the
@@ -38,6 +38,7 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.media.*
+import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
@@ -83,6 +84,7 @@ class MediaCodecRecorder(private val context: Context,
     private lateinit var audioRecorderThread: Thread
 
     private var currentVideoFilePath: String? = null
+    private var currentVideoFileUri: Uri? = null
     private var isFirstTime = true
 
     private var videoMimeType: String = when (streamInfo.encoding) {
@@ -383,6 +385,11 @@ class MediaCodecRecorder(private val context: Context,
         audioEncoderThread.join()
         audioRecorderThread.join()
         releaseMuxer()
+
+        val values = ContentValues()
+        values.clear()
+        values.put(MediaStore.Video.Media.IS_PENDING, 0)
+        currentVideoFileUri?.let { context.contentResolver.update(it, values, null, null) }
         Log.i(TAG, "stop exit")
     }
 
@@ -410,10 +417,11 @@ class MediaCodecRecorder(private val context: Context,
         values.put(MediaStore.Video.Media.DISPLAY_NAME, filename)
         values.put(MediaStore.Video.Media.DATE_TAKEN, dateTaken)
         values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_DCIM + "/Camera")
-        val uri = context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+        values.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_DCIM + "/Camera")
+        values.put(MediaStore.Video.Media.IS_PENDING, 1)
+        currentVideoFileUri = context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
         currentVideoFilePath = "/storage/emulated/0/DCIM/Camera/$filename"
-        val file = uri?.let { context.contentResolver.openFileDescriptor(it, "w") }
+        val file = currentVideoFileUri?.let { context.contentResolver.openFileDescriptor(it, "w") }
 
         if (file != null) {
             return file.fileDescriptor

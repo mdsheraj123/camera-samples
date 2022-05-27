@@ -43,6 +43,7 @@ import android.graphics.Color
 import android.hardware.camera2.*
 import android.media.ExifInterface
 import android.media.MediaActionSound
+import android.media.MediaScannerConnection
 import android.media.ThumbnailUtils
 import android.os.Bundle
 import android.os.SystemClock
@@ -477,7 +478,7 @@ class CameraFragmentMultiCam : Fragment(),CameraReadyListener {
                         cameraBase0.stopRecording()
                         sound.play(MediaActionSound.STOP_VIDEO_RECORDING)
                         recorder_button.setBackgroundResource(android.R.drawable.presence_video_online)
-                        if (settings.recorderInfo[0].storageEnable) thumbnailButton3.setImageDrawable(createRoundThumb(cameraBase0.getCurrentVideoFilePath(), THUMBNAIL_TYPE_VIDEO))
+                        if (settings.recorderInfo[0].storageEnable) thumbnailButton3.setImageDrawable(createRoundThumb(cameraBase0.getCurrentVideoFilePathList()[0], THUMBNAIL_TYPE_VIDEO))
                         recording = false
                         stopChronometer()
                         Log.i(TAG, "stopRecording exit")
@@ -522,9 +523,9 @@ class CameraFragmentMultiCam : Fragment(),CameraReadyListener {
                             Log.d(TAG, "EXIF metadata saved: $outputFilePath")
                         }
                     }
-                    snapshot0Flag = true
-                    if (snapshot0Flag and snapshot1Flag and snapshot2Flag) {
-                        it.post {
+                    it.post {
+                        snapshot0Flag = true
+                        if (snapshot0Flag and snapshot1Flag and snapshot2Flag) {
                             if (settings.snapshotInfo.encoding == "JPEG") {
                                 thumbnailButton3.setImageDrawable(createRoundThumb(cameraBase0.currentSnapshotFilePath, THUMBNAIL_TYPE_IMAGE))
                             }
@@ -546,9 +547,9 @@ class CameraFragmentMultiCam : Fragment(),CameraReadyListener {
                             Log.d(TAG, "EXIF metadata saved: $outputFilePath")
                         }
                     }
-                    snapshot1Flag = true
-                    if (snapshot0Flag and snapshot1Flag and snapshot2Flag) {
-                        it.post {
+                    it.post {
+                        snapshot1Flag = true
+                        if (snapshot0Flag and snapshot1Flag and snapshot2Flag) {
                             if (settings.snapshotInfo.encoding == "JPEG") {
                                 thumbnailButton3.setImageDrawable(createRoundThumb(cameraBase0.currentSnapshotFilePath, THUMBNAIL_TYPE_IMAGE))
                             }
@@ -563,9 +564,9 @@ class CameraFragmentMultiCam : Fragment(),CameraReadyListener {
                             Log.d(TAG, "Result received: $result")
                             val outputFilePath = cameraBase2.saveResult(result)
                         }
-                        snapshot2Flag = true
-                        if (snapshot0Flag and snapshot1Flag and snapshot2Flag) {
-                            it.post {
+                        it.post {
+                            snapshot2Flag = true
+                            if (snapshot0Flag and snapshot1Flag and snapshot2Flag) {
                                 if (settings.snapshotInfo.encoding == "JPEG") {
                                     thumbnailButton3.setImageDrawable(createRoundThumb(cameraBase0.currentSnapshotFilePath, THUMBNAIL_TYPE_IMAGE))
                                 }
@@ -607,7 +608,7 @@ class CameraFragmentMultiCam : Fragment(),CameraReadyListener {
             cameraBase1.stopRecording()
             cameraBase0.stopRecording()
             recorder_button.setBackgroundResource(android.R.drawable.presence_video_online)
-            if (settings.recorderInfo[0].storageEnable) thumbnailButton3.setImageDrawable(createRoundThumb(cameraBase0.getCurrentVideoFilePath(), THUMBNAIL_TYPE_VIDEO))
+            if (settings.recorderInfo[0].storageEnable) thumbnailButton3.setImageDrawable(createRoundThumb(cameraBase0.getCurrentVideoFilePathList()[0], THUMBNAIL_TYPE_VIDEO))
             recording = false
             stopChronometer()
             Log.i(TAG, "stopRecording exit")

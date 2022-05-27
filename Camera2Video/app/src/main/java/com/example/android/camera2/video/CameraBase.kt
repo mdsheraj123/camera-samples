@@ -1,5 +1,5 @@
 /*
-# Copyright (c) 2020-2021 Qualcomm Innovation Center, Inc.
+# Copyright (c) 2020-2022 Qualcomm Innovation Center, Inc.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted (subject to the limitations in the
@@ -66,6 +66,8 @@ import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executor
 import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeoutException
+import kotlin.collections.ArrayList
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -468,10 +470,15 @@ class CameraBase(val context: Context): CameraModule {
                     values.put(MediaStore.Images.Media.DISPLAY_NAME, filename)
                     values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
                     values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_DCIM + "/Camera")
+                    values.put(MediaStore.Images.Media.IS_PENDING, 1)
                     val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
                     currentSnapshotFilePath = "/storage/emulated/0/DCIM/Camera/$filename"
                     val imageOutStream = uri?.let { context.contentResolver.openOutputStream(it) };
                     imageOutStream?.write(bytes)
+
+                    values.clear()
+                    values.put(MediaStore.Images.Media.IS_PENDING, 0)
+                    uri?.let {context.contentResolver.update(it, values, null, null)}
                     cont.resume(currentSnapshotFilePath)
                 } catch (exc: IOException) {
                     Log.e(TAG, "Unable to write JPEG image to file", exc)
@@ -510,13 +517,14 @@ class CameraBase(val context: Context): CameraModule {
         }
     }
 
-    fun getCurrentVideoFilePath():String? {
+    fun getCurrentVideoFilePathList():ArrayList<String> {
+        val currentVideoFilePathList:ArrayList<String> = ArrayList()
         for (recorder in recorderList) {
             if(recorder.getCurrentVideoFilePath()!=null) {
-                return recorder.getCurrentVideoFilePath()
+                currentVideoFilePathList.add(recorder.getCurrentVideoFilePath()!!)
             }
         }
-        return null
+        return currentVideoFilePathList
     }
 
     override fun close() {
